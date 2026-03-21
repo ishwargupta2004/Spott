@@ -1,56 +1,26 @@
 import User from "@/models/User";
-import connectDB from "@/lib/db"; // assume db connection file
-import { auth } from "@clerk/nextjs/server";
+import connectDB from "@/lib/db";
 
-// 🔥 Store / Update user (Convex store → API logic)
-export const storeUser = async () => {
+// 🔥 USER CREATED (Convex store → create part)
+export const handleUserCreated = async (data) => {
   await connectDB();
 
-  const { userId, sessionClaims } = await auth();
-
-  if (!userId) {
-    throw new Error("Called storeUser without authentication present");
-  }
-
   const identity = {
-    tokenIdentifier: userId,
-    name: sessionClaims?.name,
-    email: sessionClaims?.email,
-    pictureUrl: sessionClaims?.picture,
+    tokenIdentifier: data.id,
+    name: data.first_name + " " + data.last_name,
+    email: data.email_addresses?.[0]?.email_address,
+    pictureUrl: data.image_url,
   };
 
-  // 🔹 Find user by tokenIdentifier (same as by_token index)
-  const user = await User.findOne({
+  // Check if already exists (safety)
+  const existingUser = await User.findOne({
     tokenIdentifier: identity.tokenIdentifier,
   });
 
-  if (user) {
-    let updated = false;
-
-    if (user.name !== identity.name) {
-      user.name = identity.name ?? "Anonymous";
-      updated = true;
-    }
-
-    if (user.email !== identity.email) {
-      user.email = identity.email ?? "";
-      updated = true;
-    }
-
-    if (user.imageUrl !== identity.pictureUrl) {
-      user.imageUrl = identity.pictureUrl;
-      updated = true;
-    }
-
-    if (updated) {
-      user.updatedAt = Date.now();
-      await user.save();
-    }
-
-    return user._id;
+  if (existingUser) {
+    return existingUser._id;
   }
 
-  // 🔹 Create new user (same defaults as Convex)
   const newUser = await User.create({
     email: identity.email ?? "",
     tokenIdentifier: identity.tokenIdentifier,
@@ -63,6 +33,73 @@ export const storeUser = async () => {
   });
 
   return newUser._id;
+};
+
+
+
+// 🔥 USER UPDATED (Convex store → update part)
+export const handleUserUpdated = async (data) => {
+  await connectDB();
+
+  const identity = {
+    tokenIdentifier: data.id,
+    name: data.first_name + " " + data.last_name,
+    email: data.email_addresses?.[0]?.email_address,
+    pictureUrl: data.image_url,
+  };
+
+  const user = await User.findOne({
+    tokenIdentifier: identity.tokenIdentifier,
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  let updated = false;
+
+  if (user.name !== identity.name) {
+    user.name = identity.name ?? "Anonymous";
+    updated = true;
+  }
+
+  if (user.email !== identity.email) {
+    user.email = identity.email ?? "";
+    updated = true;
+  }
+
+  if (user.imageUrl !== identity.pictureUrl) {
+    user.imageUrl = identity.pictureUrl;
+    updated = true;
+  }
+
+  if (updated) {
+    user.updatedAt = Date.now();
+    await user.save();
+  }
+
+  return user._id;
+};
+
+
+
+// 🔥 USER DELETED
+export const handleUserDeleted = async (data) => {
+  await connectDB();
+
+  const tokenIdentifier = data.id;
+
+  const user = await User.findOne({
+    tokenIdentifier,
+  });
+
+  if (!user) {
+    return null;
+  }
+
+  await User.deleteOne({ _id: user._id });
+
+  return user._id;
 };
 
 
