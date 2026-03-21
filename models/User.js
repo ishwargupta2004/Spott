@@ -1,25 +1,5 @@
-import mongoose from "mongoose";
-
-const locationSchema = new mongoose.Schema(
-  {
-    city: {
-      type: String,
-      required: true,
-    },
-    state: {
-      type: String,
-    },
-    country: {
-      type: String,
-      required: true,
-    },
-  },
-  { _id: false }
-);
-
 const userSchema = new mongoose.Schema(
   {
-    // Clerk auth - clerkId is the recommended field name
     clerkId: {
       type: String,
       required: true,
@@ -31,42 +11,28 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-
-    name: {
+    firstName: {
       type: String,
-      required: true,
     },
-    
+    lastName: {
+      type: String,
+    },
     imageUrl: {
       type: String,
     },
-
-    // Onboarding
     hasCompletedOnboarding: {
       type: Boolean,
       default: false,
     },
-
-    // Location
     location: locationSchema,
-
-    // Interests
-    interests: [
-      {
-        type: String,
-      },
-    ],
-
-    // Organizer tracking
+    interests: [{ type: String }],
     freeEventsCreated: {
       type: Number,
       default: 0,
     },
   },
   {
-    timestamps: true, // Mongoose automatically creates createdAt and updatedAt
+    timestamps: true,
     versionKey: false,
   }
 );
-
-export default mongoose.models.User || mongoose.model("User", userSchema);
