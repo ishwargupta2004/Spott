@@ -19,22 +19,24 @@ const locationSchema = new mongoose.Schema(
 
 const userSchema = new mongoose.Schema(
   {
-    // Clerk auth
-    
-
+    // Clerk auth - clerkId is the recommended field name
+    clerkId: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
     email: {
       type: String,
       required: true,
+      unique: true,
     },
-    tokenIdentifier: {
-      type: String,
-      required: true,
-      index: true, // by_token index
-    },
+
     name: {
       type: String,
       required: true,
     },
+    
     imageUrl: {
       type: String,
     },
@@ -42,7 +44,7 @@ const userSchema = new mongoose.Schema(
     // Onboarding
     hasCompletedOnboarding: {
       type: Boolean,
-      required: true,
+      default: false,
     },
 
     // Location
@@ -58,20 +60,11 @@ const userSchema = new mongoose.Schema(
     // Organizer tracking
     freeEventsCreated: {
       type: Number,
-      required: true,
-    },
-
-    // Timestamps (EXACT same as Convex)
-    createdAt: {
-      type: Number,
-      required: true,
-    },
-    updatedAt: {
-      type: Number,
-      required: true,
+      default: 0,
     },
   },
   {
+    timestamps: true, // Mongoose automatically creates createdAt and updatedAt
     versionKey: false,
   }
 );

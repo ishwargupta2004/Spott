@@ -2,7 +2,6 @@ import User from "@/models/User";
 import connectDB from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
 
-
 // =========================
 // 🔥 WEBHOOK FUNCTIONS
 // =========================
@@ -11,100 +10,56 @@ import { auth } from "@clerk/nextjs/server";
 export const handleUserCreated = async (data) => {
   await connectDB();
 
-  const identity = {
-    tokenIdentifier: data.id,
-    name: data.first_name + " " + data.last_name,
-    email: data.email_addresses?.[0]?.email_address,
-    pictureUrl: data.image_url,
-  };
+  const { id, email_addresses, first_name, last_name, image_url } = data;
 
-  const existingUser = await User.findOne({
-    tokenIdentifier: identity.tokenIdentifier,
-  });
-
-  if (existingUser) {
-    return existingUser._id;
-  }
-
-  const newUser = await User.create({
-    email: identity.email ?? "",
-    tokenIdentifier: identity.tokenIdentifier,
-    name: identity.name ?? "Anonymous",
-    imageUrl: identity.pictureUrl,
+  await User.create({
+    clerkId: id,
+    email: email_addresses[0]?.email_address ?? '',
+    firstName: first_name,
+    lastName: last_name,
+    imageUrl: image_url,
     hasCompletedOnboarding: false,
     freeEventsCreated: 0,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
   });
-
-  return newUser._id;
 };
-
 
 // USER UPDATED
 export const handleUserUpdated = async (data) => {
   await connectDB();
 
-  const identity = {
-    tokenIdentifier: data.id,
-    name: data.first_name + " " + data.last_name,
-    email: data.email_addresses?.[0]?.email_address,
-    pictureUrl: data.image_url,
-  };
+  const { id, email_addresses, first_name, last_name, image_url } = data;
 
-  const user = await User.findOne({
-    tokenIdentifier: identity.tokenIdentifier,
-  });
+  const user = await User.findOneAndUpdate(
+    { clerkId: id },
+    {
+      email: email_addresses[0]?.email_address ?? '',
+      firstName: first_name,
+      lastName: last_name,
+      imageUrl: image_url,
+    },
+    { new: true }
+  );
 
   if (!user) {
     throw new Error("User not found");
   }
 
-  let updated = false;
-
-  if (user.name !== identity.name) {
-    user.name = identity.name ?? "Anonymous";
-    updated = true;
-  }
-
-  if (user.email !== identity.email) {
-    user.email = identity.email ?? "";
-    updated = true;
-  }
-
-  if (user.imageUrl !== identity.pictureUrl) {
-    user.imageUrl = identity.pictureUrl;
-    updated = true;
-  }
-
-  if (updated) {
-    user.updatedAt = Date.now();
-    await user.save();
-  }
-
   return user._id;
 };
-
 
 // USER DELETED
 export const handleUserDeleted = async (data) => {
   await connectDB();
 
-  const tokenIdentifier = data.id;
+  const { id } = data;
 
-  const user = await User.findOne({ tokenIdentifier });
-
-  if (!user) return null;
-
-  await User.deleteOne({ _id: user._id });
-
-  return user._id;
+  if (id) {
+    await User.deleteOne({ clerkId: id }).catch(() => {});
+  }
 };
 
-
-
 // =========================
-// 🔥 ORIGINAL CONVEX LOGIC (MUST KEEP)
+// 🔥 ORIGINAL LOGIC
 // =========================
 
 // GET CURRENT USER
@@ -118,7 +73,7 @@ export const getCurrentUser = async () => {
   }
 
   const user = await User.findOne({
-    tokenIdentifier: userId,
+    clerkId: userId,
   });
 
   if (!user) {
@@ -127,7 +82,6 @@ export const getCurrentUser = async () => {
 
   return user;
 };
-
 
 // COMPLETE ONBOARDING
 export const completeOnboarding = async ({ location, interests }) => {
@@ -142,7 +96,6 @@ export const completeOnboarding = async ({ location, interests }) => {
   user.location = location;
   user.interests = interests;
   user.hasCompletedOnboarding = true;
-  user.updatedAt = Date.now();
 
   await user.save();
 
