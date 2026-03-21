@@ -12,15 +12,19 @@ export const handleUserCreated = async (data) => {
 
   const { id, email_addresses, first_name, last_name, image_url } = data;
 
-  await User.create({
-    clerkId: id,
-    email: email_addresses[0]?.email_address ?? '',
-    firstName: first_name,
-    lastName: last_name,
-    imageUrl: image_url,
-    hasCompletedOnboarding: false,
-    freeEventsCreated: 0,
-  });
+  await User.findOneAndUpdate(
+    { clerkId: id },
+    {
+      clerkId: id,
+      email: email_addresses[0]?.email_address ?? '',
+      firstName: first_name,
+      lastName: last_name,
+      imageUrl: image_url,
+      hasCompletedOnboarding: false,
+      freeEventsCreated: 0,
+    },
+    { upsert: true, new: true }
+  );
 };
 
 // USER UPDATED
@@ -29,7 +33,7 @@ export const handleUserUpdated = async (data) => {
 
   const { id, email_addresses, first_name, last_name, image_url } = data;
 
-  const user = await User.findOneAndUpdate(
+  await User.findOneAndUpdate(
     { clerkId: id },
     {
       email: email_addresses[0]?.email_address ?? '',
@@ -37,14 +41,8 @@ export const handleUserUpdated = async (data) => {
       lastName: last_name,
       imageUrl: image_url,
     },
-    { new: true }
+    { upsert: true, new: true }
   );
-
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  return user._id;
 };
 
 // USER DELETED

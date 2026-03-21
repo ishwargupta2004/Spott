@@ -1,4 +1,4 @@
-import { verifyWebhook } from '@clerk/backend/webhooks' 
+import { verifyWebhook } from '@clerk/backend/webhooks'
 import connectDB from '@/lib/db'
 import { handleUserCreated, handleUserUpdated, handleUserDeleted } from '@/controllers/user'
 
@@ -6,7 +6,9 @@ export async function POST(req) {
   try {
     console.log("🔥 WEBHOOK HIT");
 
-    const evt = await verifyWebhook(req);
+    const evt = await verifyWebhook(req, {
+      signingSecret: process.env.CLERK_WEBHOOK_SIGNING_SECRET
+    });
 
     console.log("📌 EVENT TYPE:", evt.type);
     console.log("📦 EVENT DATA:", evt.data);
