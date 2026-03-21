@@ -2,9 +2,17 @@ import mongoose from "mongoose";
 
 const locationSchema = new mongoose.Schema(
   {
-    city: String,
-    state: String,
-    country: String,
+    city: {
+      type: String,
+      required: true,
+    },
+    state: {
+      type: String,
+    },
+    country: {
+      type: String,
+      required: true,
+    },
   },
   { _id: false }
 );
@@ -12,52 +20,55 @@ const locationSchema = new mongoose.Schema(
 const userSchema = new mongoose.Schema(
   {
     // Clerk auth
-    clerkId: {
-      type: String,
-      required: true,
-      unique: true,
-      index: true,
-    },
+    
 
     email: {
       type: String,
-      unique: true,
-      sparse: true, // ✅ avoids crash if email missing
+      required: true,
     },
-
+    tokenIdentifier: {
+      type: String,
+      required: true,
+      index: true, // by_token index
+    },
     name: {
       type: String,
-      default: "Anonymous", // ✅ safe fallback
+      required: true,
     },
-
-    imageUrl: String,
+    imageUrl: {
+      type: String,
+    },
 
     // Onboarding
     hasCompletedOnboarding: {
       type: Boolean,
-      default: false,
+      required: true,
     },
 
     // Location
     location: locationSchema,
 
     // Interests
-    interests: [String],
+    interests: [
+      {
+        type: String,
+      },
+    ],
 
     // Organizer tracking
     freeEventsCreated: {
       type: Number,
-      default: 0,
+      required: true,
     },
 
-    // Timestamps (Convex compatible)
+    // Timestamps (EXACT same as Convex)
     createdAt: {
       type: Number,
-      default: () => Date.now(),
+      required: true,
     },
     updatedAt: {
       type: Number,
-      default: () => Date.now(),
+      required: true,
     },
   },
   {

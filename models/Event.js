@@ -5,19 +5,15 @@ const eventSchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
-      trim: true,
     },
-
     description: {
       type: String,
       required: true,
     },
-
     slug: {
       type: String,
       required: true,
-      unique: true, // ✅ important
-      index: true,
+      index: true, // by_slug
     },
 
     // Organizer
@@ -25,9 +21,8 @@ const eventSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
+      index: true, // by_organizer
     },
-
     organizerName: {
       type: String,
       required: true,
@@ -37,23 +32,25 @@ const eventSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      index: true,
+      index: true, // by_category
     },
-
-    tags: [String], // ✅ simple & flexible
+    tags: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
 
     // Date & Time
     startDate: {
       type: Number,
       required: true,
-      index: true,
+      index: true, // by_start_date
     },
-
     endDate: {
       type: Number,
       required: true,
     },
-
     timezone: {
       type: String,
       required: true,
@@ -65,17 +62,19 @@ const eventSchema = new mongoose.Schema(
       enum: ["physical", "online"],
       required: true,
     },
-
-    venue: String,
-    address: String,
-
+    venue: {
+      type: String,
+    },
+    address: {
+      type: String,
+    },
     city: {
       type: String,
       required: true,
     },
-
-    state: String,
-
+    state: {
+      type: String,
+    },
     country: {
       type: String,
       required: true,
@@ -86,36 +85,35 @@ const eventSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-
     ticketType: {
       type: String,
       enum: ["free", "paid"],
       required: true,
     },
-
     ticketPrice: {
       type: Number,
-      default: 0, // ✅ safe for free events
     },
-
     registrationCount: {
       type: Number,
-      default: 0, // ✅ important fix
+      required: true,
     },
 
     // Customization
-    coverImage: String,
-    themeColor: String,
-
-    // Timestamps (Convex compatible)
-    createdAt: {
-      type: Number,
-      default: () => Date.now(),
+    coverImage: {
+      type: String,
+    },
+    themeColor: {
+      type: String,
     },
 
+    // Timestamps
+    createdAt: {
+      type: Number,
+      required: true,
+    },
     updatedAt: {
       type: Number,
-      default: () => Date.now(),
+      required: true,
     },
   },
   {
@@ -123,7 +121,7 @@ const eventSchema = new mongoose.Schema(
   }
 );
 
-// 🔍 Search index
+// (Optional) Text index for search_title
 eventSchema.index({ title: "text" });
 
 export default mongoose.models.Event || mongoose.model("Event", eventSchema);

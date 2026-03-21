@@ -1,8 +1,13 @@
 import User from "@/models/User";
 import connectDB from "@/lib/db";
+import { auth } from "@clerk/nextjs/server";
 
 
-// 🔥 USER CREATED (Convex store → create part)
+// =========================
+// 🔥 WEBHOOK FUNCTIONS
+// =========================
+
+// USER CREATED
 export const handleUserCreated = async (data) => {
   await connectDB();
 
@@ -13,7 +18,6 @@ export const handleUserCreated = async (data) => {
     pictureUrl: data.image_url,
   };
 
-  // Check if already exists (safety)
   const existingUser = await User.findOne({
     tokenIdentifier: identity.tokenIdentifier,
   });
@@ -37,8 +41,7 @@ export const handleUserCreated = async (data) => {
 };
 
 
-
-// 🔥 USER UPDATED (Convex store → update part)
+// USER UPDATED
 export const handleUserUpdated = async (data) => {
   await connectDB();
 
@@ -83,20 +86,15 @@ export const handleUserUpdated = async (data) => {
 };
 
 
-
-// 🔥 USER DELETED
+// USER DELETED
 export const handleUserDeleted = async (data) => {
   await connectDB();
 
   const tokenIdentifier = data.id;
 
-  const user = await User.findOne({
-    tokenIdentifier,
-  });
+  const user = await User.findOne({ tokenIdentifier });
 
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
 
   await User.deleteOne({ _id: user._id });
 
