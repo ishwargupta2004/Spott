@@ -1,29 +1,32 @@
-import User from "@/models/User"; // ✅ fixed
+import User from "@/models/User";
 import connectDB from "@/lib/db";
 
+
+// 🔥 USER CREATED (Convex store → create part)
 export const handleUserCreated = async (data) => {
   await connectDB();
 
-  console.log("USER CREATE DATA:", data);
-
-  const existingUser = await User.findOne({
+  const identity = {
     tokenIdentifier: data.id,
+    name: data.first_name + " " + data.last_name,
+    email: data.email_addresses?.[0]?.email_address,
+    pictureUrl: data.image_url,
+  };
+
+  // Check if already exists (safety)
+  const existingUser = await User.findOne({
+    tokenIdentifier: identity.tokenIdentifier,
   });
 
-  if (existingUser) return existingUser._id;
+  if (existingUser) {
+    return existingUser._id;
+  }
 
   const newUser = await User.create({
-    clerkId: data.id,
-    tokenIdentifier: data.id,
-
-    ...(data.email_addresses?.[0]?.email_address && {
-      email: data.email_addresses[0].email_address,
-    }),
-
-    name: `${data.first_name || ""} ${data.last_name || ""}`.trim() || "Anonymous",
-
-    imageUrl: data.image_url,
-
+    email: identity.email ?? "",
+    tokenIdentifier: identity.tokenIdentifier,
+    name: identity.name ?? "Anonymous",
+    imageUrl: identity.pictureUrl,
     hasCompletedOnboarding: false,
     freeEventsCreated: 0,
     createdAt: Date.now(),
@@ -34,7 +37,8 @@ export const handleUserCreated = async (data) => {
 };
 
 
-// USER UPDATED
+
+// 🔥 USER UPDATED (Convex store → update part)
 export const handleUserUpdated = async (data) => {
   await connectDB();
 
@@ -79,15 +83,20 @@ export const handleUserUpdated = async (data) => {
 };
 
 
-// USER DELETED
+
+// 🔥 USER DELETED
 export const handleUserDeleted = async (data) => {
   await connectDB();
 
   const tokenIdentifier = data.id;
 
-  const user = await User.findOne({ tokenIdentifier });
+  const user = await User.findOne({
+    tokenIdentifier,
+  });
 
-  if (!user) return null;
+  if (!user) {
+    return null;
+  }
 
   await User.deleteOne({ _id: user._id });
 
