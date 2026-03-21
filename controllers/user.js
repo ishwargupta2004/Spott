@@ -27,6 +27,7 @@ export const handleUserCreated = async (data) => {
   }
 
   const newUser = await User.create({
+    clerkId: data.id,
     email: identity.email ?? "",
     tokenIdentifier: identity.tokenIdentifier,
     name: identity.name ?? "Anonymous",
