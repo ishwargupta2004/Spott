@@ -4,25 +4,34 @@ import { handleUserCreated, handleUserUpdated, handleUserDeleted } from '@/contr
 
 export async function POST(req) {
   try {
-    const evt = await verifyWebhook(req)
-    
-    await connectDB()
+    console.log("🔥 WEBHOOK HIT");
+
+    const evt = await verifyWebhook(req);
+
+    console.log("📌 EVENT TYPE:", evt.type);
+    console.log("📦 EVENT DATA:", evt.data);
+
+    await connectDB();
 
     if (evt.type === 'user.created') {
-      await handleUserCreated(evt.data)
+      console.log("✅ Creating user...");
+      await handleUserCreated(evt.data);
     }
 
     if (evt.type === 'user.updated') {
-      await handleUserUpdated(evt.data)
+      console.log("✏️ Updating user...");
+      await handleUserUpdated(evt.data);
     }
 
     if (evt.type === 'user.deleted') {
-      await handleUserDeleted(evt.data)
+      console.log("🗑️ Deleting user...");
+      await handleUserDeleted(evt.data);
     }
 
-    return new Response('Webhook processed', { status: 200 })
+    return new Response('Webhook processed', { status: 200 });
+
   } catch (err) {
-    console.error('Webhook verification failed:', err)
-    return new Response('Invalid webhook', { status: 400 })
+    console.error('❌ Webhook error:', err);
+    return new Response('Invalid webhook', { status: 400 });
   }
 }

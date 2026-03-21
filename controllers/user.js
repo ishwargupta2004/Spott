@@ -1,37 +1,29 @@
-import User from "@/models/User";
+import User from "@/models/User"; // ✅ fixed
 import connectDB from "@/lib/db";
-import { auth } from "@clerk/nextjs/server";
 
-
-// =========================
-// 🔥 WEBHOOK FUNCTIONS
-// =========================
-
-// USER CREATED
 export const handleUserCreated = async (data) => {
   await connectDB();
 
-  const identity = {
-    tokenIdentifier: data.id,
-    name: data.first_name + " " + data.last_name,
-    email: data.email_addresses?.[0]?.email_address,
-    pictureUrl: data.image_url,
-  };
+  console.log("USER CREATE DATA:", data);
 
   const existingUser = await User.findOne({
-    tokenIdentifier: identity.tokenIdentifier,
+    tokenIdentifier: data.id,
   });
 
-  if (existingUser) {
-    return existingUser._id;
-  }
+  if (existingUser) return existingUser._id;
 
   const newUser = await User.create({
     clerkId: data.id,
-    email: identity.email ?? "",
-    tokenIdentifier: identity.tokenIdentifier,
-    name: identity.name ?? "Anonymous",
-    imageUrl: identity.pictureUrl,
+    tokenIdentifier: data.id,
+
+    ...(data.email_addresses?.[0]?.email_address && {
+      email: data.email_addresses[0].email_address,
+    }),
+
+    name: `${data.first_name || ""} ${data.last_name || ""}`.trim() || "Anonymous",
+
+    imageUrl: data.image_url,
+
     hasCompletedOnboarding: false,
     freeEventsCreated: 0,
     createdAt: Date.now(),
