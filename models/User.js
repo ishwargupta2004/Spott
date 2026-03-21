@@ -1,5 +1,22 @@
 import mongoose from "mongoose";
 
+const locationSchema = new mongoose.Schema(
+  {
+    city: {
+      type: String,
+      required: true,
+    },
+    state: {
+      type: String,
+    },
+    country: {
+      type: String,
+      required: true,
+    },
+  },
+  { _id: false }
+);
+
 const userSchema = new mongoose.Schema(
   {
     clerkId: {
@@ -27,7 +44,11 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
     location: locationSchema,
-    interests: [{ type: String }],
+    interests: [
+      {
+        type: String,
+      },
+    ],
     freeEventsCreated: {
       type: Number,
       default: 0,
@@ -38,3 +59,5 @@ const userSchema = new mongoose.Schema(
     versionKey: false,
   }
 );
+
+export default mongoose.models.User || mongoose.model("User", userSchema);
