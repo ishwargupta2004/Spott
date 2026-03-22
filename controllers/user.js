@@ -1,6 +1,6 @@
 import { getAuth } from "@clerk/nextjs/server";
 import User from "@/models/User";
-import dbConnect from "@/lib/dbConnect";
+import dbConnect from "@/lib/db";
 
 // ─── Create User (Webhook: user.created) ─────────────────────────────────────
 export async function createUser(data) {
