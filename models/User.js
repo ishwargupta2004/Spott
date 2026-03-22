@@ -3,12 +3,6 @@ import mongoose from "mongoose";
 const userSchema = new mongoose.Schema(
   {
     // ─── Clerk Auth ───────────────────────────────────────────────
-    clerkId: {
-      type: String,
-      unique: true,
-      index: true,
-    },
-
     email: {
       type: String,
       required: true,
@@ -17,11 +11,11 @@ const userSchema = new mongoose.Schema(
       trim: true,
     },
 
-    // Clerk ka unique user ID — primary auth lookup (replaces Convex index "by_token")
+    // Clerk ka unique user ID — primary auth lookup
     tokenIdentifier: {
       type: String,
       required: true,
-      unique: true, // index("by_token", ["tokenIdentifier"]) ka replacement
+      unique: true,
     },
 
     name: {
@@ -44,31 +38,28 @@ const userSchema = new mongoose.Schema(
     // ─── Attendee Preferences (from onboarding) ───────────────────
     location: {
       city: { type: String },
-      state: { type: String, default: null },   // optional
+      state: { type: String, default: null },
       country: { type: String },
     },
 
     interests: {
-      type: [String],   // Min 3 categories (validation app-level pe karna)
+      type: [String],
       default: [],
     },
 
     // ─── Organizer Tracking (User Subscription) ───────────────────
     freeEventsCreated: {
       type: Number,
-      default: 0,   // Track free event limit (1 free)
+      default: 0,
     },
   },
   {
-    // ─── Timestamps ───────────────────────────────────────────────
-    // Convex mein createdAt/updatedAt manually number the, yahan Mongoose auto handle karega
     timestamps: true,
   }
 );
 
 // ─── Indexes ──────────────────────────────────────────────────────
-// Convex ka .index("by_token", ["tokenIdentifier"]) — primary auth lookup
-userSchema.index({ tokenIdentifier: 1 });   // already unique above, explicit index for clarity
+userSchema.index({ tokenIdentifier: 1 });
 userSchema.index({ email: 1 });
 
 // ─── Model ────────────────────────────────────────────────────────
