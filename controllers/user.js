@@ -1,101 +1,88 @@
+import { getAuth } from "@clerk/nextjs/server";
 import User from "@/models/User";
-import connectDB from "@/lib/db";
-import { auth } from "@clerk/nextjs/server";
+import dbConnect from "@/lib/dbConnect";
 
-// =========================
-// 🔥 WEBHOOK FUNCTIONS
-// =========================
+// ─── Create User (Webhook: user.created) ─────────────────────────────────────
+export async function createUser(data) {
+  await dbConnect();
 
-// USER CREATED
-export const handleUserCreated = async (data) => {
-  await connectDB();
+  // Duplicate check — agar already exist karta hai toh create mat karo
+  const existingUser = await User.findOne({ tokenIdentifier: data.id });
+  if (existingUser) return existingUser._id;
 
-  const { id, email_addresses, first_name, last_name, image_url } = data;
+  const user = await User.create({
+    email: data.email_addresses?.[0]?.email_address ?? "",
+    tokenIdentifier: data.id,             // Clerk user ID — sirf "user_xxx" format
+    name:
+      `${data.first_name ?? ""} ${data.last_name ?? ""}`.trim() || "Anonymous",
+    imageUrl: data.image_url ?? null,
+    hasCompletedOnboarding: false,
+    freeEventsCreated: 0,
+  });
 
-  await User.findOneAndUpdate(
-    { clerkId: id },
-    {
-      clerkId: id,
-      email: email_addresses[0]?.email_address ?? '',
-      firstName: first_name,
-      lastName: last_name,
-      imageUrl: image_url,
-      hasCompletedOnboarding: false,
-      freeEventsCreated: 0,
-    },
-    { upsert: true, new: true }
-  );
-};
+  return user._id;
+}
 
-// USER UPDATED
-export const handleUserUpdated = async (data) => {
-  await connectDB();
+// ─── Update User (Webhook: user.updated) ─────────────────────────────────────
+export async function updateUser(data) {
+  await dbConnect();
 
-  const { id, email_addresses, first_name, last_name, image_url } = data;
+  const existingUser = await User.findOne({ tokenIdentifier: data.id });
+  if (!existingUser) return;
 
-  await User.findOneAndUpdate(
-    { clerkId: id },
-    {
-      email: email_addresses[0]?.email_address ?? '',
-      firstName: first_name,
-      lastName: last_name,
-      imageUrl: image_url,
-    },
-    { upsert: true, new: true }
-  );
-};
+  const incomingName =
+    `${data.first_name ?? ""} ${data.last_name ?? ""}`.trim() || "Anonymous";
+  const incomingEmail = data.email_addresses?.[0]?.email_address ?? "";
+  const incomingImageUrl = data.image_url ?? null;
 
-// USER DELETED
-export const handleUserDeleted = async (data) => {
-  await connectDB();
+  // Sirf changed fields update karo
+  const updates = {};
+  if (existingUser.name !== incomingName)           updates.name = incomingName;
+  if (existingUser.email !== incomingEmail)         updates.email = incomingEmail;
+  if (existingUser.imageUrl !== incomingImageUrl)   updates.imageUrl = incomingImageUrl;
 
-  const { id } = data;
-
-  if (id) {
-    await User.deleteOne({ clerkId: id }).catch(() => {});
+  if (Object.keys(updates).length > 0) {
+    await User.findOneAndUpdate({ tokenIdentifier: data.id }, updates);
   }
-};
+}
 
-// =========================
-// 🔥 ORIGINAL LOGIC
-// =========================
+// ─── Delete User (Webhook: user.deleted) ─────────────────────────────────────
+export async function deleteUser(data) {
+  await dbConnect();
 
-// GET CURRENT USER
-export const getCurrentUser = async () => {
-  await connectDB();
+  await User.findOneAndDelete({ tokenIdentifier: data.id });
+}
 
-  const { userId } = await auth();
+// ─── Get Current Authenticated User ──────────────────────────────────────────
+export async function getCurrentUser(req) {
+  await dbConnect();
+
+  const { userId } = getAuth(req);   // userId = "user_xxx" format — webhook se jo store hua wahi
 
   if (!userId) {
     return null;
   }
 
-  const user = await User.findOne({
-    clerkId: userId,
-  });
+  const user = await User.findOne({ tokenIdentifier: userId });
 
   if (!user) {
     throw new Error("User not found");
   }
 
   return user;
-};
+}
 
-// COMPLETE ONBOARDING
-export const completeOnboarding = async ({ location, interests }) => {
-  await connectDB();
+// ─── Complete Onboarding (Attendee Preferences) ───────────────────────────────
+export async function completeOnboarding(req, { location, interests }) {
+  await dbConnect();
 
-  const user = await getCurrentUser();
+  const user = await getCurrentUser(req);
 
-  if (!user) {
-    throw new Error("User not found");
-  }
-
-  user.location = location;
-  user.interests = interests;
-  user.hasCompletedOnboarding = true;
-
-  await user.save();
+  await User.findByIdAndUpdate(user._id, {
+    location,                   // { city, state (optional), country }
+    interests,                  // array of strings, min 3
+    hasCompletedOnboarding: true,
+  });
 
   return user._id;
-};
+}
