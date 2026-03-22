@@ -1,6 +1,6 @@
 import { verifyWebhook } from '@clerk/backend/webhooks'
 import connectDB from '@/lib/db'
-import { handleUserCreated, handleUserUpdated, handleUserDeleted } from '@/controllers/user'
+import { createUser, updateUser, deleteUser } from '@/controllers/user'
 
 export async function POST(req) {
   try {
@@ -17,17 +17,17 @@ export async function POST(req) {
 
     if (evt.type === 'user.created') {
       console.log("✅ Creating user...");
-      await handleUserCreated(evt.data);
+      await createUser(evt.data);
     }
 
     if (evt.type === 'user.updated') {
       console.log("✏️ Updating user...");
-      await handleUserUpdated(evt.data);
+      await updateUser(evt.data);
     }
 
     if (evt.type === 'user.deleted') {
       console.log("🗑️ Deleting user...");
-      await handleUserDeleted(evt.data);
+      await deleteUser(evt.data);
     }
 
     return new Response('Webhook processed', { status: 200 });
