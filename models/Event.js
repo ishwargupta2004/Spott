@@ -5,148 +5,123 @@ const eventSchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
-      trim: true,
     },
-
     description: {
       type: String,
       required: true,
     },
-
     slug: {
       type: String,
       required: true,
-      unique: true,   // index("by_slug", ["slug"]) ka replacement
-      lowercase: true,
-      trim: true,
+      index: true, // by_slug
     },
 
-    // ─── Organizer ────────────────────────────────────────────────
-    // Convex mein v.id("users") tha, MongoDB mein ObjectId reference
+    // Organizer
     organizerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,   // index("by_organizer", ["organizerId"]) neeche hai
+      required: true,
+      index: true, // by_organizer
     },
-
     organizerName: {
       type: String,
       required: true,
-      trim: true,
     },
 
-    // ─── Event Details ────────────────────────────────────────────
+    // Event details
     category: {
       type: String,
-      required: true,   // index("by_category", ["category"]) neeche hai
+      required: true,
+      index: true, // by_category
     },
+    tags: [
+      {
+        type: String,
+        required: true,
+      },
+    ],
 
-    tags: {
-      type: [String],
-      default: [],
-    },
-
-    // ─── Date & Time ──────────────────────────────────────────────
-    // Convex mein v.number() (Unix timestamp) tha, MongoDB mein Date store karo — better querying
+    // Date & Time
     startDate: {
-      type: Date,
-      required: true,   // index("by_start_date", ["startDate"]) neeche hai
+      type: Number,
+      required: true,
+      index: true, // by_start_date
     },
-
     endDate: {
-      type: Date,
+      type: Number,
       required: true,
     },
-
     timezone: {
       type: String,
       required: true,
     },
 
-    // ─── Location ─────────────────────────────────────────────────
+    // Location
     locationType: {
       type: String,
-      enum: ["physical", "online"],   // v.union(v.literal("physical"), v.literal("online"))
+      enum: ["physical", "online"],
       required: true,
     },
-
     venue: {
       type: String,
-      default: null,
     },
-
     address: {
       type: String,
-      default: null,
     },
-
     city: {
       type: String,
       required: true,
     },
-
     state: {
       type: String,
-      default: null,  // optional
     },
-
     country: {
       type: String,
       required: true,
     },
 
-    // ─── Capacity & Ticketing ─────────────────────────────────────
+    // Capacity & Ticketing
     capacity: {
       type: Number,
       required: true,
     },
-
     ticketType: {
       type: String,
-      enum: ["free", "paid"],   // v.union(v.literal("free"), v.literal("paid"))
+      enum: ["free", "paid"],
+      required: true,
+    },
+    ticketPrice: {
+      type: Number,
+    },
+    registrationCount: {
+      type: Number,
       required: true,
     },
 
-    ticketPrice: {
-      type: Number,
-      default: null,  // only for paid events
-    },
-
-    registrationCount: {
-      type: Number,
-      default: 0,
-    },
-
-    // ─── Customization ────────────────────────────────────────────
+    // Customization
     coverImage: {
       type: String,
-      default: null,
     },
-
     themeColor: {
       type: String,
-      default: null,
+    },
+
+    // Timestamps
+    createdAt: {
+      type: Number,
+      required: true,
+    },
+    updatedAt: {
+      type: Number,
+      required: true,
     },
   },
   {
-    // ─── Timestamps ───────────────────────────────────────────────
-    timestamps: true,
+    versionKey: false,
   }
 );
 
-// ─── Indexes ──────────────────────────────────────────────────────
-// Convex ke saare indexes reproduce kiye hain:
-eventSchema.index({ organizerId: 1 });          // index("by_organizer", ["organizerId"])
-eventSchema.index({ category: 1 });             // index("by_category", ["category"])
-eventSchema.index({ startDate: 1 });            // index("by_start_date", ["startDate"])
-eventSchema.index({ slug: 1 }, { unique: true }); // index("by_slug", ["slug"])
+// (Optional) Text index for search_title
+eventSchema.index({ title: "text" });
 
-// Convex ka searchIndex("search_title", { searchField: "title" }) ka replacement
-// MongoDB Atlas use kar rahe ho toh Atlas Search use karo
-// Local/self-hosted ke liye text index:
-eventSchema.index({ title: "text", description: "text" }); // full-text search
-
-// ─── Model ────────────────────────────────────────────────────────
-const Event = mongoose.models.Event || mongoose.model("Event", eventSchema);
-
-export default Event;
+export default mongoose.models.Event || mongoose.model("Event", eventSchema);

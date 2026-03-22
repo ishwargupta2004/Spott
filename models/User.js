@@ -1,53 +1,54 @@
 import mongoose from "mongoose";
 
+const locationSchema = new mongoose.Schema(
+  {
+    city: {
+      type: String,
+      required: true,
+    },
+    state: {
+      type: String,
+    },
+    country: {
+      type: String,
+      required: true,
+    },
+  },
+  { _id: false }
+);
+
 const userSchema = new mongoose.Schema(
   {
-    // ─── Clerk Auth ───────────────────────────────────────────────
+    clerkId: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
     email: {
       type: String,
       required: true,
       unique: true,
-      lowercase: true,
-      trim: true,
     },
-
-    // Clerk ka unique user ID — primary auth lookup
-    tokenIdentifier: {
+    firstName: {
       type: String,
-      required: true,
-      unique: true,
     },
-
-    name: {
+    lastName: {
       type: String,
-      required: true,
-      trim: true,
     },
-
     imageUrl: {
       type: String,
-      default: null,
     },
-
-    // ─── Onboarding ───────────────────────────────────────────────
     hasCompletedOnboarding: {
       type: Boolean,
       default: false,
     },
-
-    // ─── Attendee Preferences (from onboarding) ───────────────────
-    location: {
-      city: { type: String },
-      state: { type: String, default: null },
-      country: { type: String },
-    },
-
-    interests: {
-      type: [String],
-      default: [],
-    },
-
-    // ─── Organizer Tracking (User Subscription) ───────────────────
+    location: locationSchema,
+    interests: [
+      {
+        type: String,
+      },
+    ],
     freeEventsCreated: {
       type: Number,
       default: 0,
@@ -55,14 +56,8 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    versionKey: false,
   }
 );
 
-// ─── Indexes ──────────────────────────────────────────────────────
-userSchema.index({ tokenIdentifier: 1 });
-userSchema.index({ email: 1 });
-
-// ─── Model ────────────────────────────────────────────────────────
-const User = mongoose.models.User || mongoose.model("User", userSchema);
-
-export default User;
+export default mongoose.models.User || mongoose.model("User", userSchema);
