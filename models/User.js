@@ -1,54 +1,53 @@
 import mongoose from "mongoose";
 
-const locationSchema = new mongoose.Schema(
-  {
-    city: {
-      type: String,
-      required: true,
-    },
-    state: {
-      type: String,
-    },
-    country: {
-      type: String,
-      required: true,
-    },
-  },
-  { _id: false }
-);
-
 const userSchema = new mongoose.Schema(
   {
-    clerkId: {
-      type: String,
-      required: true,
-      unique: true,
-      index: true,
-    },
+    // ─── Clerk Auth ───────────────────────────────────────────────
     email: {
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
+      trim: true,
     },
-    firstName: {
+
+    // Clerk ka unique user ID — primary auth lookup
+    tokenIdentifier: {
       type: String,
+      required: true,
+      unique: true,
     },
-    lastName: {
+
+    name: {
       type: String,
+      required: true,
+      trim: true,
     },
+
     imageUrl: {
       type: String,
+      default: null,
     },
+
+    // ─── Onboarding ───────────────────────────────────────────────
     hasCompletedOnboarding: {
       type: Boolean,
       default: false,
     },
-    location: locationSchema,
-    interests: [
-      {
-        type: String,
-      },
-    ],
+
+    // ─── Attendee Preferences (from onboarding) ───────────────────
+    location: {
+      city: { type: String },
+      state: { type: String, default: null },
+      country: { type: String },
+    },
+
+    interests: {
+      type: [String],
+      default: [],
+    },
+
+    // ─── Organizer Tracking (User Subscription) ───────────────────
     freeEventsCreated: {
       type: Number,
       default: 0,
@@ -56,8 +55,14 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    versionKey: false,
   }
 );
 
-export default mongoose.models.User || mongoose.model("User", userSchema);
+// ─── Indexes ──────────────────────────────────────────────────────
+userSchema.index({ tokenIdentifier: 1 });
+userSchema.index({ email: 1 });
+
+// ─── Model ────────────────────────────────────────────────────────
+const User = mongoose.models.User || mongoose.model("User", userSchema);
+
+export default User;
