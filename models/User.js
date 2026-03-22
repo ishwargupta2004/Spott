@@ -5,7 +5,6 @@ const userSchema = new mongoose.Schema(
     // ─── Clerk Auth ───────────────────────────────────────────────
     clerkId: {
       type: String,
-      required: true,
       unique: true,
       index: true,
     },
