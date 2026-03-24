@@ -58,10 +58,6 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// ─── Indexes ──────────────────────────────────────────────────────
-userSchema.index({ tokenIdentifier: 1 });
-userSchema.index({ email: 1 });
-
 // ─── Model ────────────────────────────────────────────────────────
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 
