@@ -3,7 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
 // import Footer from "@/components/footer";
-// import { Toaster } from "sonner";
+import { Toaster } from "sonner";
 
 export const metadata = {
   title: "Spott - Delightful Events Start Here",
@@ -38,7 +38,7 @@ export default function RootLayout({ children }) {
 
               </main>
 
-              {/* <Toaster position="top-center" richColors /> */}
+              <Toaster position="top-center" richColors />
 
           </ClerkProvider>
         </ThemeProvider>

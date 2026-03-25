@@ -7,10 +7,14 @@ import { Show, SignInButton, useAuth, UserButton } from "@clerk/nextjs";
 import { BarLoader } from "react-spinners";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import OnboardingModal from "./onboarding-modal";
+import { useOnboarding } from "@/lib/useOnboarding";
 
 export default function Header() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const { isLoaded } = useAuth();
+
+  const { showOnboarding, handleOnboardingComplete, handleOnboardingSkip } = useOnboarding();
 
   return (
     <>
@@ -93,6 +97,14 @@ export default function Header() {
           </div>
         )}
       </nav>
+
+      {/* Onboarding Modal */}
+      <OnboardingModal
+        isOpen={showOnboarding}
+        onClose={handleOnboardingSkip}
+        onComplete={handleOnboardingComplete}
+      />
+
     </>
   );
 }
