@@ -8,7 +8,8 @@ import { BarLoader } from "react-spinners";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import OnboardingModal from "./onboarding-modal";
-import { useOnboarding } from "@/lib/useOnboarding";
+import { useOnboarding } from "@/scripts/useOnboarding";
+import SearchLocationBar from "./search-location-bar";
 
 export default function Header() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -32,6 +33,12 @@ export default function Header() {
               priority
             />
           </Link>
+
+          {/* Search & Location - Desktop Only */}
+          <div className="hidden md:flex flex-1 justify-center">
+            <SearchLocationBar />
+          </div>
+
 
           {/* Right Side Actions */}
           <div className="flex items-center">
