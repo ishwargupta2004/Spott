@@ -178,7 +178,7 @@ export default function EventDashboardPage() {
     <div className="min-h-screen pb-20 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Navigation */}
-        <div className="mb-6">
+        <div className="mb-3">
           <Button
             variant="ghost"
             onClick={() => router.push("/my-events")}
