@@ -33,7 +33,6 @@ import { getCategoryIcon, getCategoryLabel } from "@/data/data";
 import QRScannerModal from "../_components/qr-scanner-modal";
 import { AttendeeCard } from "../_components/attendee-card";
 
-
 export default function EventDashboardPage() {
   const params = useParams();
   const router = useRouter();
@@ -178,7 +177,7 @@ export default function EventDashboardPage() {
     <div className="min-h-screen pb-20 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Navigation */}
-        <div className="mb-3">
+        <div className="mb-6">
           <Button
             variant="ghost"
             onClick={() => router.push("/my-events")}
@@ -340,40 +339,37 @@ export default function EventDashboardPage() {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          {/* TabsList aur Search/Actions ko alag alag rows mein rakho */}
-          <div className="flex flex-col gap-4 mb-4">
-            <TabsList>
-              <TabsTrigger value="all">
-                All ({stats.totalRegistrations})
-              </TabsTrigger>
-              <TabsTrigger value="checked-in">
-                Checked In ({stats.checkedInCount})
-              </TabsTrigger>
-              <TabsTrigger value="pending">
-                Pending ({stats.pendingCount})
-              </TabsTrigger>
-            </TabsList>
+          <TabsList className="mb-4">
+            <TabsTrigger value="all">
+              All ({stats.totalRegistrations})
+            </TabsTrigger>
+            <TabsTrigger value="checked-in">
+              Checked In ({stats.checkedInCount})
+            </TabsTrigger>
+            <TabsTrigger value="pending">
+              Pending ({stats.pendingCount})
+            </TabsTrigger>
+          </TabsList>
 
-            {/* Search and Actions */}
-            <div className="flex gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search by name, email, or QR code..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Button
-                variant="outline"
-                onClick={handleExportCSV}
-                className="gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Export CSV
-              </Button>
+          {/* Search and Actions */}
+          <div className="flex gap-3 mb-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, email, or QR code..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
             </div>
+            <Button
+              variant="outline"
+              onClick={handleExportCSV}
+              className="gap-2"
+            >
+              <Download className="w-4 h-4" />
+              Export CSV
+            </Button>
           </div>
 
           {/* Attendee List */}
@@ -392,8 +388,6 @@ export default function EventDashboardPage() {
             )}
           </TabsContent>
         </Tabs>
-
-
       </div>
 
       {/* QR Scanner Modal */}
