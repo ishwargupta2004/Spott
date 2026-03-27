@@ -107,7 +107,7 @@ export default function OnboardingModal({ isOpen, onClose, onComplete }) {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <div className="mb-4">
             <Progress value={progress} className="h-1" />

@@ -13,8 +13,9 @@ import { PricingTable } from "@clerk/nextjs";
 
 export default function UpgradeModal({ isOpen, onClose, trigger = "limit" }) {
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl">
+
+    <Dialog open={isOpen} onOpenChange={onClose} >
+      <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="w-6 h-6 text-purple-500" />
@@ -29,6 +30,7 @@ export default function UpgradeModal({ isOpen, onClose, trigger = "limit" }) {
         </DialogHeader>
 
         {/* Pricing Cards */}
+        
         <PricingTable
           checkoutProps={{
             appearance: {
@@ -40,6 +42,7 @@ export default function UpgradeModal({ isOpen, onClose, trigger = "limit" }) {
             },
           }}
         />
+      
 
         {/* Footer */}
         <div className="flex gap-3">
