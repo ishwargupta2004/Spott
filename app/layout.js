@@ -2,7 +2,7 @@ import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
-// import Footer from "@/components/footer";
+import Footer from "@/components/footer";
 import { Toaster } from "sonner";
 
 export const metadata = {
@@ -34,7 +34,7 @@ export default function RootLayout({ children }) {
                 {/* Page content (above glow) */}
                 <div className="relative z-10">{children}</div>
 
-                {/* <Footer /> */}
+                <Footer />
 
               </main>
 
